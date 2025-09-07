@@ -29,13 +29,7 @@ impl Node {
 fn build_tree(x: Vec<Vec<f32>>, y: Vec<i32>) -> Node {
     let y_set: HashSet<i32> = y.iter().cloned().collect();
     if y_set.capacity() == 1 {
-        return Node {
-            result: y[0],
-            true_branch: None,
-            false_branch: None,
-            feature_index: 0,
-            val: 0.,
-        };
+        return Node::new(0, None, None, y[0], 0.);
     }
 
     let mut best_gain: f32 = 0.;
@@ -76,22 +70,16 @@ fn build_tree(x: Vec<Vec<f32>>, y: Vec<i32>) -> Node {
     if best_gain > 0. {
         let true_branch = Some(Box::new(build_tree(best_sets.0, best_sets.1)));
         let false_branch = Some(Box::new(build_tree(best_sets.2, best_sets.3)));
-        return Node {
-            feature_index: best_criteria.0 as i32,
-            val: best_criteria.1,
-            true_branch: true_branch,
-            false_branch: false_branch,
-            result: y[0],
-        };
+        return Node::new(
+            best_criteria.0 as i32,
+            true_branch,
+            false_branch,
+            y[0],
+            best_criteria.1,
+        );
     }
 
-    return Node {
-        result: 0,
-        true_branch: None,
-        false_branch: None,
-        feature_index: 0,
-        val: 0.,
-    };
+    return Node::new(0, None, None, 0, 0.);
 }
 
 fn split_data(
@@ -194,5 +182,6 @@ fn main() {
     let x = vec![vec![1., 1.], vec![1., 0.], vec![0., 1.], vec![0., 0.]];
     let y = Vec::from([1, 1, 0, 0]);
 
-    build_tree(x, y);
+    let shit = build_tree(x, y);
+    shit.true_branch;
 }
