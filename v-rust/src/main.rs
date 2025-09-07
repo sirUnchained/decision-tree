@@ -1,5 +1,5 @@
 use ordered_float::OrderedFloat;
-use std::collections::HashSet;
+use std::{collections::HashSet, ops::Index};
 
 struct Node {
     feature_index: i32,
@@ -41,11 +41,11 @@ fn build_tree(x: Vec<Vec<f32>>, y: Vec<i32>) -> Node {
     let best_gain: i32 = 0;
     let best_criteria: Option<Node> = None;
     let best_sets: Option<Node> = None;
-    let n_features: usize = x[0].capacity();
+    let n_features: usize = x.index(0).capacity();
     let current_entropy: f32 = entropy(y);
 
     for feature in 0..n_features {
-        // let feature_values:Vec<f32> = set(X[:, feature])
+        let feature_values: Vec<f32> = get_features_of_column(x.clone(), feature as i32);
     }
 
     return Node {
@@ -96,18 +96,21 @@ impl Decision_tree {
 }
 */
 
-fn split_data(x: Vec<Vec<f32>>, y: Vec<i32>, feature: i32, value: i32) {}
+fn split_data(x: Vec<Vec<f32>>, y: Vec<i32>, feature: i32, value: f32) {
+    let feature_arr = get_features_of_column(x.clone(), feature);
 
-fn get_features_of_column(datas: Vec<Vec<f32>>, column_index: i32) -> HashSet<OrderedFloat<f32>> {
+    let true_indices: Vec<f32> = feature_arr.iter().find_map(|&x| x > value).collect();
+    // let false_indices = feature_arr.iter().filter(|&&x| x <= value).collect();
+}
+
+fn get_features_of_column(datas: Vec<Vec<f32>>, column_index: i32) -> Vec<f32> {
     let mut features: Vec<f32> = Vec::new();
 
     for i in 0..datas[0].capacity() {
         features.push(datas[i][column_index as usize]);
     }
 
-    let final_result: HashSet<OrderedFloat<f32>> = features.into_iter().map(OrderedFloat).collect();
-
-    final_result
+    features
 }
 
 fn entropy(data: Vec<i32>) -> f32 {
