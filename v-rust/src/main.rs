@@ -5,7 +5,7 @@ struct Node {
     feature_index: i32,
     true_branch: Option<Box<Node>>,
     false_branch: Option<Box<Node>>,
-    result: i32,
+    result: Option<i32>,
     val: f32,
 }
 impl Node {
@@ -13,7 +13,7 @@ impl Node {
         feature_index: i32,
         true_branch: Option<Box<Node>>,
         false_branch: Option<Box<Node>>,
-        result: i32,
+        result: Option<i32>,
         val: f32,
     ) -> Self {
         Self {
@@ -29,7 +29,7 @@ impl Node {
 fn build_tree(x: Vec<Vec<f32>>, y: Vec<i32>) -> Node {
     let y_set: HashSet<i32> = y.iter().cloned().collect();
     if y_set.capacity() == 1 {
-        return Node::new(0, None, None, y[0], 0.);
+        return Node::new(0, None, None, Some(y[0]), 0.);
     }
 
     let mut best_gain: f32 = 0.;
@@ -74,12 +74,12 @@ fn build_tree(x: Vec<Vec<f32>>, y: Vec<i32>) -> Node {
             best_criteria.0 as i32,
             true_branch,
             false_branch,
-            y[0],
+            Some(y[0]),
             best_criteria.1,
         );
     }
 
-    return Node::new(0, None, None, 0, 0.);
+    return Node::new(0, None, None, None, 0.);
 }
 
 fn split_data(
@@ -178,10 +178,43 @@ fn bincount(x: Vec<i32>) -> Vec<i32> {
     return l;
 }
 
+fn predict(tree: Node, sample: Vec<f32>) -> i32 {
+    match tree.result {
+        None => {
+            let mut branch = tree.false_branch;
+            if sample[tree.feature_index as usize] <= tree.val {
+                match branch {
+                    None => {
+                        return 0;
+                    }
+                    Some(v) => {
+                        branch = v.true_branch;
+                    }
+                }
+            }
+            match branch {
+                None => {
+                    return 0;
+                }
+                Some(v) => {
+                    println!("{:#?}", v.result);
+                    return predict(*v, sample);
+                }
+            }
+        }
+        Some(v) => {
+            println!("{}", v);
+            return v;
+        }
+    }
+}
+
 fn main() {
     let x = vec![vec![1., 1.], vec![1., 0.], vec![0., 1.], vec![0., 0.]];
     let y = Vec::from([1, 1, 0, 0]);
 
-    let shit = build_tree(x, y);
-    shit.true_branch;
+    let tree = build_tree(x, y);
+
+    let sample = vec![0., 0.];
+    println!("{}", predict(tree, sample));
 }
