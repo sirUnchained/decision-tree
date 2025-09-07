@@ -1,2 +1,4 @@
 target/
 iris.csv
+.gitignore
+main.py
