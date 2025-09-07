@@ -46,7 +46,11 @@ fn build_tree(x: Vec<Vec<f32>>, y: Vec<i32>) -> Node {
         Vec::from(Vec::new()),
         Vec::new(),
     );
-    let n_features: usize = x.index(0).capacity();
+
+    let mut n_features = 0;
+    if x.len() != 0 {
+        n_features = x.index(0).len();
+    }
     let current_entropy: f32 = entropy(y.clone());
 
     for feature in 0..n_features {
@@ -82,7 +86,7 @@ fn build_tree(x: Vec<Vec<f32>>, y: Vec<i32>) -> Node {
     }
 
     return Node {
-        result: y[0],
+        result: 0,
         true_branch: None,
         false_branch: None,
         feature_index: 0,
@@ -99,8 +103,7 @@ fn split_data(
     let feature_arr = get_features_of_column(x.clone(), feature);
 
     let mut true_indices: Vec<i32> = Vec::new();
-    for i in 0..feature_arr.capacity() {
-        println!("{}, {}", i, feature_arr.capacity());
+    for i in 0..feature_arr.len() {
         if feature_arr[i] > value {
             true_indices.push(i.clone() as i32);
         }
@@ -108,7 +111,7 @@ fn split_data(
     let true_indices = true_indices;
 
     let mut false_indices: Vec<i32> = Vec::new();
-    for i in 0..feature_arr.capacity() {
+    for i in 0..feature_arr.len() {
         if feature_arr[i] <= value {
             false_indices.push(i as i32);
         }
@@ -161,11 +164,18 @@ fn entropy(data: Vec<i32>) -> f32 {
 }
 
 fn bincount(x: Vec<i32>) -> Vec<i32> {
-    let max = x.iter().max().unwrap();
-    let mut l: Vec<i32> = Vec::with_capacity(*max as usize);
+    let mut max: i32 = 0;
+    match x.iter().max() {
+        None => {}
+        Some(val) => {
+            max = *val;
+        }
+    };
+
+    let mut l: Vec<i32> = Vec::with_capacity(max as usize);
 
     let mut count_of_index_num;
-    for i in 0..=*max {
+    for i in 0..=max {
         count_of_index_num = 0;
 
         for j in x.iter() {
