@@ -1,34 +1,63 @@
-use ndarray::Array1;
-// use std::{collections::HashMap, intrinsics::log2f32, ops::Index};
+use ordered_float::OrderedFloat;
+use std::collections::HashSet;
 
 struct Node {
     feature_index: i32,
-    threshold: i32,
-    left: Option<Box<Node>>,
-    right: Option<Box<Node>>,
-    info_gain: i32,
+    true_branch: Option<Box<Node>>,
+    false_branch: Option<Box<Node>>,
+    result: i32,
     val: f32,
 }
 impl Node {
     pub fn new(
         feature_index: i32,
-        threshold: i32,
-        left: Option<Box<Node>>,
-        right: Option<Box<Node>>,
-        info_gain: i32,
+        true_branch: Option<Box<Node>>,
+        false_branch: Option<Box<Node>>,
+        result: i32,
         val: f32,
     ) -> Self {
         Self {
             feature_index,
-            threshold,
-            left,
-            right,
-            info_gain,
+            true_branch,
+            false_branch,
+            result,
             val,
         }
     }
 }
 
+fn build_tree(x: Vec<Vec<f32>>, y: Vec<i32>) -> Node {
+    let y_set: HashSet<i32> = y.iter().cloned().collect();
+    if y_set.capacity() == 1 {
+        return Node {
+            result: y[0],
+            true_branch: None,
+            false_branch: None,
+            feature_index: 0,
+            val: 0.,
+        };
+    }
+
+    let best_gain: i32 = 0;
+    let best_criteria: Option<Node> = None;
+    let best_sets: Option<Node> = None;
+    let n_features: usize = x[0].capacity();
+    let current_entropy: f32 = entropy(y);
+
+    for feature in 0..n_features {
+        // let feature_values:Vec<f32> = set(X[:, feature])
+    }
+
+    return Node {
+        result: 9,
+        true_branch: None,
+        false_branch: None,
+        feature_index: 0,
+        val: 0.,
+    };
+}
+
+/*
 struct Decision_tree {
     root: Option<Box<Node>>,
     min_sample_split: u32,
@@ -65,6 +94,21 @@ impl Decision_tree {
         for feature_index in 0..self.num_features {}
     }
 }
+*/
+
+fn split_data(x: Vec<Vec<f32>>, y: Vec<i32>, feature: i32, value: i32) {}
+
+fn get_features_of_column(datas: Vec<Vec<f32>>, column_index: i32) -> HashSet<OrderedFloat<f32>> {
+    let mut features: Vec<f32> = Vec::new();
+
+    for i in 0..datas[0].capacity() {
+        features.push(datas[i][column_index as usize]);
+    }
+
+    let final_result: HashSet<OrderedFloat<f32>> = features.into_iter().map(OrderedFloat).collect();
+
+    final_result
+}
 
 fn entropy(data: Vec<i32>) -> f32 {
     let max = data.capacity() as f32;
@@ -100,11 +144,7 @@ fn bincount(x: Vec<i32>) -> Vec<i32> {
         l.push(count_of_index_num);
     }
 
-    l
+    return l;
 }
 
-fn main() {
-    println!("{}", entropy(vec![1, 1, 5, 7, 8, 9]));
-    println!("{}", 1.0 / 3.0);
-    // println!("{:#?}", bincount(vec![1, 1, 5, 7, 8, 9]));
-}
+fn main() {}
