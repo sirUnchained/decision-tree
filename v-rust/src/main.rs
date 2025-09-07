@@ -28,18 +28,13 @@ impl Node {
 
 fn build_tree(x: Vec<Vec<f32>>, y: Vec<i32>) -> Node {
     let y_set: HashSet<i32> = y.iter().cloned().collect();
-    if y_set.capacity() == 1 {
+    if y_set.len() == 1 {
         return Node::new(0, None, None, Some(y[0]), 0.);
     }
 
     let mut best_gain: f32 = 0.;
-    let mut best_criteria: (usize, f32) = (0, 0.);
-    let mut best_sets: (Vec<Vec<f32>>, Vec<i32>, Vec<Vec<f32>>, Vec<i32>) = (
-        Vec::from(Vec::new()),
-        Vec::new(),
-        Vec::from(Vec::new()),
-        Vec::new(),
-    );
+    let mut best_criteria: Option<(usize, f32)> = Option::None;
+    let mut best_sets: Option<(Vec<Vec<f32>>, Vec<i32>, Vec<Vec<f32>>, Vec<i32>)> = Option::None;
 
     let mut n_features = 0;
     if x.len() != 0 {
@@ -57,26 +52,41 @@ fn build_tree(x: Vec<Vec<f32>>, y: Vec<i32>) -> Node {
                 split_data(x.clone(), y.clone(), feature as i32, value.into());
             let true_entropy = entropy(true_y.clone());
             let false_entropy = entropy(false_y.clone());
-            let p = true_y.capacity() as f32 / y.capacity() as f32;
+            let p = true_y.len() as f32 / y.len() as f32;
             let gain = current_entropy - p * true_entropy - (1.0 - p) * false_entropy;
             if gain > best_gain {
                 best_gain = gain;
-                best_criteria = (feature, value.into());
-                best_sets = (true_x, true_y, false_x, false_y);
+                best_criteria = Some((feature, value.into()));
+                best_sets = Some((true_x, true_y, false_x, false_y));
             }
         }
     }
 
     if best_gain > 0. {
-        let true_branch = Some(Box::new(build_tree(best_sets.0, best_sets.1)));
-        let false_branch = Some(Box::new(build_tree(best_sets.2, best_sets.3)));
-        return Node::new(
-            best_criteria.0 as i32,
-            true_branch,
-            false_branch,
-            Some(y[0]),
-            best_criteria.1,
-        );
+        let mut true_branch = None;
+        let mut false_branch = None;
+        match best_sets {
+            None => {}
+            Some(best_sets) => {
+                true_branch = Some(Box::new(build_tree(best_sets.0, best_sets.1)));
+                false_branch = Some(Box::new(build_tree(best_sets.2, best_sets.3)));
+            }
+        }
+
+        match best_criteria {
+            None => {
+                return Node::new(0, None, None, Some(y[0]), 0.);
+            }
+            Some(best_criteria) => {
+                return Node::new(
+                    best_criteria.0 as i32,
+                    true_branch,
+                    false_branch,
+                    Some(y[0]),
+                    best_criteria.1,
+                );
+            }
+        }
     }
 
     return Node::new(0, None, None, None, 0.);
@@ -128,7 +138,7 @@ fn split_data(
 fn get_features_of_column(datas: Vec<Vec<f32>>, column_index: i32) -> Vec<f32> {
     let mut features: Vec<f32> = Vec::new();
 
-    for i in 0..datas[0].capacity() {
+    for i in 0..datas[0].len() {
         features.push(datas[i][column_index as usize]);
     }
 
@@ -136,7 +146,7 @@ fn get_features_of_column(datas: Vec<Vec<f32>>, column_index: i32) -> Vec<f32> {
 }
 
 fn entropy(data: Vec<i32>) -> f32 {
-    let max = data.capacity() as f32;
+    let max = data.len() as f32;
     let count: Vec<i32> = bincount(data);
     let probabilities: Vec<f32> = count.iter().map(|&x| x as f32 / max).collect();
 
@@ -160,7 +170,7 @@ fn bincount(x: Vec<i32>) -> Vec<i32> {
         }
     };
 
-    let mut l: Vec<i32> = Vec::with_capacity(max as usize);
+    let mut l: Vec<i32> = Vec::new();
 
     let mut count_of_index_num;
     for i in 0..=max {
