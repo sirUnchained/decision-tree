@@ -67,13 +67,12 @@ impl Decision_tree {
 }
 
 fn entropy(data: Vec<i32>) -> f32 {
-    let max = *data.iter().max().unwrap() as usize;
+    let max = data.capacity() as f32;
     let count: Vec<i32> = bincount(data);
-    let probabilities: Vec<f32> = count.iter().map(|&x| x as f32 / max as f32).collect();
+    let probabilities: Vec<f32> = count.iter().map(|&x| x as f32 / max).collect();
+    println!("{:#?}", probabilities);
 
-    // let mut entropy: Vec<f32> = Vec::with_capacity(max);
     let mut sum: f32 = 0.0;
-
     for p in probabilities {
         if p as f32 > 0.0 {
             sum += p * p.log2();
@@ -106,4 +105,6 @@ fn bincount(x: Vec<i32>) -> Vec<i32> {
 
 fn main() {
     println!("{}", entropy(vec![1, 1, 5, 7, 8, 9]));
+    println!("{}", 1.0 / 3.0);
+    // println!("{:#?}", bincount(vec![1, 1, 5, 7, 8, 9]));
 }
