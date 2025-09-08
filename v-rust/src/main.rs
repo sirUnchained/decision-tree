@@ -40,18 +40,18 @@ fn build_tree(x: Vec<Vec<f32>>, y: Vec<i32>) -> Node {
     if x.len() != 0 {
         n_features = x.index(0).len();
     }
-    let current_entropy: f32 = entropy(y.clone());
+    let current_entropy: f32 = entropy(&y);
 
     for feature in 0..n_features {
-        let feature_values_vec: Vec<f32> = get_features_of_column(x.clone(), feature as i32);
+        let feature_values_vec: Vec<f32> = get_features_of_column(&x, feature as i32);
         let feature_values_set: HashSet<OrderedFloat<f32>> =
             feature_values_vec.into_iter().map(OrderedFloat).collect();
 
         for value in feature_values_set {
             let (true_x, true_y, false_x, false_y) =
-                split_data(x.clone(), y.clone(), feature as i32, value.into());
-            let true_entropy = entropy(true_y.clone());
-            let false_entropy = entropy(false_y.clone());
+                split_data(&x, &y, feature as i32, value.into());
+            let true_entropy = entropy(&true_y);
+            let false_entropy = entropy(&false_y);
             let p = true_y.len() as f32 / y.len() as f32;
             let gain = current_entropy - p * true_entropy - (1.0 - p) * false_entropy;
             if gain > best_gain {
@@ -93,17 +93,17 @@ fn build_tree(x: Vec<Vec<f32>>, y: Vec<i32>) -> Node {
 }
 
 fn split_data(
-    x: Vec<Vec<f32>>,
-    y: Vec<i32>,
+    x: &Vec<Vec<f32>>,
+    y: &Vec<i32>,
     feature: i32,
     value: f32,
 ) -> (Vec<Vec<f32>>, Vec<i32>, Vec<Vec<f32>>, Vec<i32>) {
-    let feature_arr = get_features_of_column(x.clone(), feature);
+    let feature_arr = get_features_of_column(x, feature);
 
     let mut true_indices: Vec<i32> = Vec::new();
     for i in 0..feature_arr.len() {
         if feature_arr[i] > value {
-            true_indices.push(i.clone() as i32);
+            true_indices.push(i as i32);
         }
     }
     let true_indices = true_indices;
@@ -135,7 +135,7 @@ fn split_data(
     return (true_x, true_y, false_x, false_y);
 }
 
-fn get_features_of_column(datas: Vec<Vec<f32>>, column_index: i32) -> Vec<f32> {
+fn get_features_of_column(datas: &Vec<Vec<f32>>, column_index: i32) -> Vec<f32> {
     let mut features: Vec<f32> = Vec::new();
 
     for i in 0..datas[0].len() {
@@ -145,7 +145,7 @@ fn get_features_of_column(datas: Vec<Vec<f32>>, column_index: i32) -> Vec<f32> {
     features
 }
 
-fn entropy(data: Vec<i32>) -> f32 {
+fn entropy(data: &Vec<i32>) -> f32 {
     let max = data.len() as f32;
     let count: Vec<i32> = bincount(data);
     let probabilities: Vec<f32> = count.iter().map(|&x| x as f32 / max).collect();
@@ -161,7 +161,7 @@ fn entropy(data: Vec<i32>) -> f32 {
     return sum;
 }
 
-fn bincount(x: Vec<i32>) -> Vec<i32> {
+fn bincount(x: &Vec<i32>) -> Vec<i32> {
     let mut max: i32 = 0;
     match x.iter().max() {
         None => {}
